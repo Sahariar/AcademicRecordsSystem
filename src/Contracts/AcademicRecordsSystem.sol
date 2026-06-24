@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-contract StudentRegistry {
+contract AcademicRecordsSystem {
     struct Student {
         string name;
         uint256 age;
@@ -47,12 +47,18 @@ contract StudentRegistry {
         _;
     }
     modifier onlyacademicHead() {
-        require(msg.sender == academicHead, "Not academicHead so you can't add");
+        require(
+            msg.sender == academicHead,
+            "Not academicHead so you can't add"
+        );
         _;
     }
 
     modifier onlyStaff() {
-        require(staffMembers[msg.sender].isActive, "Not Staff Members so you can Update");
+        require(
+            staffMembers[msg.sender].isActive,
+            "Not Staff Members so you can Update"
+        );
         _;
     }
     modifier studentExists(uint256 _id) {
@@ -60,25 +66,52 @@ contract StudentRegistry {
         _;
     }
 
-    event CreateStudent(uint256 indexed id, string name, string email, uint256 admissionDate);
-    event UpdateStudentEvent(uint256 indexed id, string name, string email, uint256 admissionDate);
+    event CreateStudent(
+        uint256 indexed id,
+        string name,
+        string email,
+        uint256 admissionDate
+    );
+    event UpdateStudentEvent(
+        uint256 indexed id,
+        string name,
+        string email,
+        uint256 admissionDate
+    );
 
-    event CreateStaff(address indexed staffMembers, string name, uint256 createdOn);
-    event CreateDepartment(uint256 indexed departmentId, string name, bool isActive);
+    event CreateStaff(
+        address indexed staffMembers,
+        string name,
+        uint256 createdOn
+    );
+    event CreateDepartment(
+        uint256 indexed departmentId,
+        string name,
+        bool isActive
+    );
 
     function registerDepartment(string memory _name) public onlyacademicHead {
         uint256 currentId = nextdepartmentId;
-        departments[nextdepartmentId] = Department(nextdepartmentId, _name, true);
+        departments[nextdepartmentId] = Department(
+            nextdepartmentId,
+            _name,
+            true
+        );
         departmentIds.push(nextdepartmentId);
         nextdepartmentId++;
         emit CreateDepartment(currentId, _name, true);
     }
 
-    function registerStudent(string memory _name, uint256 _age, string memory _email, uint256 _departmentId)
-        public
-        onlyacademicHead
-    {
-        require(departments[_departmentId].isActive, "Department does not exist or is inactive");
+    function registerStudent(
+        string memory _name,
+        uint256 _age,
+        string memory _email,
+        uint256 _departmentId
+    ) public onlyacademicHead {
+        require(
+            departments[_departmentId].isActive,
+            "Department does not exist or is inactive"
+        );
         uint256 currentId = nextStudentId;
 
         students[currentId] = Student({
@@ -94,11 +127,13 @@ contract StudentRegistry {
         emit CreateStudent(currentId, _name, _email, block.timestamp);
     }
 
-    function updateStudent(uint256 _id, string memory _name, uint256 _age, string memory _email, uint256 _departmentId)
-        public
-        onlyAuthorizePersonal
-        studentExists(_id)
-    {
+    function updateStudent(
+        uint256 _id,
+        string memory _name,
+        uint256 _age,
+        string memory _email,
+        uint256 _departmentId
+    ) public onlyAuthorizePersonal studentExists(_id) {
         require(students[_id].isActive, "Cannot update an inactive student");
 
         Student storage studentToUpdate = students[_id];
@@ -108,18 +143,35 @@ contract StudentRegistry {
         studentToUpdate.email = _email;
         studentToUpdate.departmentId = _departmentId;
 
-        emit UpdateStudentEvent(_id, _name, _email, studentToUpdate.admissionDate);
+        emit UpdateStudentEvent(
+            _id,
+            _name,
+            _email,
+            studentToUpdate.admissionDate
+        );
     }
 
-    function activateStudent(uint256 _id) public onlyacademicHead studentExists(_id) {
+    function activateStudent(
+        uint256 _id
+    ) public onlyacademicHead studentExists(_id) {
         students[_id].isActive = true;
     }
 
-    function deactivateStudent(uint256 _id) public onlyacademicHead studentExists(_id) {
+    function deactivateStudent(
+        uint256 _id
+    ) public onlyacademicHead studentExists(_id) {
         students[_id].isActive = false;
     }
 
-    function getStudentById(uint256 _id) public view onlyAuthorizePersonal studentExists(_id) returns (Student memory) {
+    function getStudentById(
+        uint256 _id
+    )
+        public
+        view
+        onlyAuthorizePersonal
+        studentExists(_id)
+        returns (Student memory)
+    {
         return students[_id];
     }
 
@@ -127,20 +179,36 @@ contract StudentRegistry {
         return nextStudentId - baseNumber;
     }
 
-    function registerStaff(address _academicStaff, string memory _name) public onlyacademicHead {
-        require(staffMembers[_academicStaff].createdOn == 0, "Staff Already exists");
-        staffMembers[_academicStaff] = Staff({name: _name, createdOn: block.timestamp, isActive: true});
+    function registerStaff(
+        address _academicStaff,
+        string memory _name
+    ) public onlyacademicHead {
+        require(
+            staffMembers[_academicStaff].createdOn == 0,
+            "Staff Already exists"
+        );
+        staffMembers[_academicStaff] = Staff({
+            name: _name,
+            createdOn: block.timestamp,
+            isActive: true
+        });
 
         emit CreateStaff(_academicStaff, _name, block.timestamp);
     }
 
     function activateStaff(address _academicStaff) public onlyacademicHead {
-        require(staffMembers[_academicStaff].createdOn != 0, "Staff Doesn't Exits");
+        require(
+            staffMembers[_academicStaff].createdOn != 0,
+            "Staff Doesn't Exits"
+        );
         staffMembers[_academicStaff].isActive = true;
     }
 
     function deactivateStaff(address _academicStaff) public onlyacademicHead {
-        require(staffMembers[_academicStaff].createdOn != 0, "Staff Doesn't Exits");
+        require(
+            staffMembers[_academicStaff].createdOn != 0,
+            "Staff Doesn't Exits"
+        );
         staffMembers[_academicStaff].isActive = false;
     }
 }
